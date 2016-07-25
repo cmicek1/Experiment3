@@ -203,7 +203,7 @@ public class Experiment3 extends PApplet {
         if (state == 2 || state == 3) {
             // Keep track of gaze directions
             if (loopCount == 0) {
-                myMessage2.add(state + ", " + gazeDirection);
+                myMessage2.add(state * 10 + gazeDirection);
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
@@ -213,7 +213,7 @@ public class Experiment3 extends PApplet {
                 if (gazeDirection == 4) {
                     gazeDirection = 0;
                 }
-                myMessage2.add(state + ", " + gazeDirection);
+                myMessage2.add(state * 10 + gazeDirection);
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
