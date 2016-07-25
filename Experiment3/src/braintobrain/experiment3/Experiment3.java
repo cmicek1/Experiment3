@@ -3,11 +3,14 @@ package braintobrain.experiment3;
 import processing.core.PApplet;
 import processing.core.PShape;
 
+import java.util.concurrent.ThreadLocalRandom;
 
 import oscP5.OscP5;
 import oscP5.OscMessage;
-
 import netP5.NetAddress;
+
+import ddf.minim.Minim;
+import ddf.minim.AudioPlayer;
 
 /**
  * Brain-to-Brain Communication Experiment 3.
@@ -51,11 +54,18 @@ public class Experiment3 extends PApplet {
     public static final int CLIENTPORT = 5001;
     
     
+    /** File path to state-change beep file. */
+    public static final String BEEP =
+            "C:/Users/Chris/git/Experiment3/Experiment3/src/data/beep-08b.wav";
+    
+    
     /** Color to fill a rectangle for SSVEP. */
     public static final int FILLCOLOR = 255;
     
     /** Percentage of the screen for the rectangle to fill. */
-    public static final float SCREENPERCENT = 5f / 6;
+    public static final float SCREENPERCENT = 1f / 6;
+    /* NOTE: Audio timing is hugely affected by the size of the stimulus.
+    Change with caution. */
     
     /** Time to delay from idle state to experiment start (in milliseconds). */
     public static final int IDLETIME = 15000;
@@ -109,6 +119,13 @@ public class Experiment3 extends PApplet {
     /** Message to send to client. */
     OscMessage myMessage2 = new OscMessage("/test");
     
+    
+    /** Minim instance for loading audio. */
+    Minim minim;
+    
+    /** AudioPlayer to play sounds. */
+    AudioPlayer player;
+    
     /** Flashing square for SSVEP. */
     PShape rectangle;
 
@@ -119,10 +136,10 @@ public class Experiment3 extends PApplet {
     public void changeState(int newstate) {
         state = newstate; //update state
         myMessage2.add(newstate);
+     // Record new state in GUI data
         oscP5Location2.send(myMessage2, location1);
         myMessage2.clear(); 
-        java.awt.Toolkit.getDefaultToolkit().beep();
-        java.awt.Toolkit.getDefaultToolkit().beep();
+        player.play();
     }
     
     /**
@@ -133,15 +150,19 @@ public class Experiment3 extends PApplet {
      */
     public int chooseState() {
         if (counters[0] == 20 && counters[1] == 20) {
+            // All trials finished; exit
             return 4;
         } else if (counters[0] == 20 && counters[1] != 20) {
+            // Need more state 3
             counters[1]++;
             return 3;
         } else if (counters[0] != 20 && counters[1] == 20) {
+            // Need more state 2
             counters[0]++;
             return 2;
         } else {
-            int currState = 2 + (int) (Math.random() * 3);
+            // Randomly choose either state 2 or state 3
+            int currState = ThreadLocalRandom.current().nextInt(2, 3 + 1);
             counters[currState - 2] = counters[currState - 2] + 1;
             return currState;
         }
@@ -150,6 +171,8 @@ public class Experiment3 extends PApplet {
 
     @Override
     public void setup() {
+        minim = new Minim(this);
+        player = minim.loadFile(BEEP);
         size(displayWidth, displayHeight, P2D); // Basically fullscreen
         background(0); // Start black
         shapeMode(CENTER);
@@ -161,6 +184,7 @@ public class Experiment3 extends PApplet {
         for (int i = 0; i < 2; i++) {
             counters[i] = 0;
         }
+        player.play();
     }
 
 
@@ -172,10 +196,12 @@ public class Experiment3 extends PApplet {
         }
         
         if (millis() - startTime > 2 * IDLETIME && state == 1) {
+            // Randomly choose experiment state.
             changeState(chooseState());
         }
               
         if (state == 2 || state == 3) {
+            // Keep track of gaze directions
             if (loopCount == 0) {
                 myMessage2.add(state + ", " + gazeDirection);
                 oscP5Location2.send(myMessage2, location1);
@@ -194,9 +220,10 @@ public class Experiment3 extends PApplet {
             }
             
             if (state == 2) {
+                // No flash
                 rectangle.setFill(color(0));
                 shape(rectangle);
-            } else {
+            } else { // State 3 --> SSVEP
                 if (loopCount % 2 == 0) {
                     rectangle.setFill(color(FILLCOLOR));
                 } else {
@@ -215,6 +242,8 @@ public class Experiment3 extends PApplet {
         if (state == 4) {
             exit();
         }
+        
+        // 4 Hz per rectangle color change
         delay((int) (1.0 / FREQ) * 500);
     }
 
