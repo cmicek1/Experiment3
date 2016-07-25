@@ -201,6 +201,11 @@ public class Experiment3 extends PApplet {
         }
               
         if (state == 2 || state == 3) {
+            // Update state first
+            if (loopCount != 0 && loopCount % 320 == 0) {
+                changeState(chooseState());
+            }
+            
             // Keep track of gaze directions
             if (loopCount == 0) {
                 myMessage2.add(state * 10 + gazeDirection);
@@ -209,7 +214,7 @@ public class Experiment3 extends PApplet {
                 java.awt.Toolkit.getDefaultToolkit().beep();
                 
             } else if (loopCount % 80 == 0) {
-                gazeDirection++;
+                ++gazeDirection;
                 if (gazeDirection == 4) {
                     gazeDirection = 0;
                 }
@@ -232,9 +237,7 @@ public class Experiment3 extends PApplet {
                 shape(rectangle);
             }
             
-            if (loopCount != 0 && loopCount % 320 == 0) {
-                changeState(chooseState());
-            }
+           
             loopCount++;
         }
         
