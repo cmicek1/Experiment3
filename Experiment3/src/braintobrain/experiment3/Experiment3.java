@@ -31,10 +31,11 @@ import ddf.minim.AudioPlayer;
  *   - Experimental:
  *      o  Large rectangle flashing black and white at 8 Hz
  *      
- * For both cases, the trial is initiated with an audio cue of 2 beeps.
+ * For both cases, the trial is initiated with an audio cue of one high-pitched
+ * beep.
  * 
- * Cues of one beep then signal when the subject should change his/her
- * gazing direction, following the sequence below:
+ * Cues of one system-default beep then signal when the subject should change
+ * his/her gazing direction, following the sequence below:
  *    left --> right --> up --> down
  * 
  * 
