@@ -21,7 +21,7 @@ import netP5.NetAddress;
  * 10/20 guidelines):
  *  - BIAS/SRB on A1/A2
  *  - N1P on Oz
- *  - N2P on Fp1
+ *  - N2P on Fp2
  *  
  * The experiment displays a Processing window, then performs 20
  * randomized trials, 10 each for both the control and experimental
