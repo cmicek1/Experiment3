@@ -10,8 +10,8 @@ import oscP5.OscP5;
 import oscP5.OscMessage;
 import netP5.NetAddress;
 
-//import ddf.minim.Minim;
-//import ddf.minim.AudioPlayer;
+import ddf.minim.Minim;
+import ddf.minim.AudioPlayer;
 
 /**
  * Brain-to-Brain Communication Experiment 3.
@@ -56,9 +56,9 @@ public class Experiment3 extends PApplet {
     public static final int CLIENTPORT = 5001;
     
     
-//    /** File path to state-change beep file. */
-//    public static final String BEEP =
-//            "C:/Users/Chris/git/Experiment3/Experiment3/src/data/beep-08b.wav";
+    /** File path to state-change beep file. */
+    public static final String BEEP =
+            "C:/Users/Chris/git/Experiment3/Experiment3/src/data/beep-08b.wav";
     
     /** Percentage of the screen for SSVEP rectangle to fill. */
     public static final float SCREENPERCENT = 1f / 5;
@@ -116,14 +116,8 @@ public class Experiment3 extends PApplet {
      */
     int state = 0;
     
-//    /** 
-//     * Current gaze direction, sent to EEG output file. 
-//     * 0 = left
-//     * 1 = right
-//     * 2 = up
-//     * 3 = down
-//     */
-//    int gazeDirection = 0;
+    /** Stored number of eye saccades. */
+    int gazeNum = 0;
     
     
     //For communication with OpenBCI_GUI
@@ -137,11 +131,11 @@ public class Experiment3 extends PApplet {
     OscMessage myMessage2 = new OscMessage("/test");
     
     
-//    /** Minim instance for loading audio. */
-//    Minim minim;
-//    
-//    /** AudioPlayer to play sounds. */
-//    AudioPlayer player;
+    /** Minim instance for loading audio. */
+    Minim minim;
+    
+    /** AudioPlayer to play sounds. */
+    AudioPlayer player;
     
     /** Flashing square for SSVEP. */
     PShape ssvepRect;
@@ -161,7 +155,7 @@ public class Experiment3 extends PApplet {
         state = newstate; //update state
         if (state == 2 || state == 3 || state == 4) {
             // First digit is state, last 2 are trial #
-            myMessage2.add(state * 100 + counters[state - 2]);
+            myMessage2.add(state * 100 + 10 * counters[state - 2]);
         } else {
             myMessage2.add(newstate);
         }
@@ -169,7 +163,7 @@ public class Experiment3 extends PApplet {
         oscP5Location2.send(myMessage2, location1);
         myMessage2.clear();
         java.awt.Toolkit.getDefaultToolkit().beep();
-//        player.play();
+        player.play();
     }
     
     /**
@@ -201,16 +195,19 @@ public class Experiment3 extends PApplet {
      * @return the new current state
      */
     public int chooseState() {
-        if (counters[0] == 10 && counters[1] == 10 && counters[2] == 10) {
+        if (counters[0] == 5 && counters[1] == 5 && counters[2] == 5) {
             // All trials finished; exit
             return 5;
-        } else if (counters[0] == 10) {
+        }
+        if (counters[0] == 5) {
             // No more state 2
             exStates.add(2);
-        } else if (counters[1] == 10) {
+        }
+        if (counters[1] == 5) {
             // No more state 3
             exStates.add(3);
-        } else if (counters[2] == 10) {
+        }
+        if (counters[2] == 5) {
             // No more state 4
             exStates.add(4);
         }
@@ -224,8 +221,8 @@ public class Experiment3 extends PApplet {
 
     @Override
     public void setup() {
-//        minim = new Minim(this);
-//        player = minim.loadFile(BEEP);
+        minim = new Minim(this);
+        player = minim.loadFile(BEEP);
         size(1920, 1080, P2D); // Basically fullscreen
         background(0); // Start black
         shapeMode(CENTER);
@@ -249,8 +246,8 @@ public class Experiment3 extends PApplet {
         for (int i = 0; i < 3; i++) {
             counters[i] = 0;
         }
-        java.awt.Toolkit.getDefaultToolkit().beep();
-//        player.play();
+//        java.awt.Toolkit.getDefaultToolkit().beep();
+        player.play();
     }
 
 
@@ -273,23 +270,23 @@ public class Experiment3 extends PApplet {
                 changeState(chooseState());
             }
             
-//            // Keep track of gaze directions
-//            if (loopCount == 0) {
-//                myMessage2.add(state * 10 + gazeDirection);
-//                oscP5Location2.send(myMessage2, location1);
-//                myMessage2.clear(); 
-//                java.awt.Toolkit.getDefaultToolkit().beep();
-//                
-//            } else if (loopCount % 80 == 0) {
-//                ++gazeDirection;
-//                if (gazeDirection == 4) {
-//                    gazeDirection = 0;
-//                }
-//                myMessage2.add(state * 10 + gazeDirection);
-//                oscP5Location2.send(myMessage2, location1);
-//                myMessage2.clear(); 
-//                java.awt.Toolkit.getDefaultToolkit().beep();
-//            }
+            // Keep track of gaze directions
+            if (loopCount == 0 && state < 4) {
+                myMessage2.add(state * 100 + 10 * counters[state - 2] + gazeNum);
+                oscP5Location2.send(myMessage2, location1);
+                myMessage2.clear(); 
+                java.awt.Toolkit.getDefaultToolkit().beep();
+                
+            } else if (loopCount % 46 == 0 && state < 4) {
+                ++gazeNum;
+                if (gazeNum == 8) {
+                    gazeNum = 0;
+                }
+                myMessage2.add(state * 100 + 10 * counters[state - 2] + gazeNum);
+                oscP5Location2.send(myMessage2, location1);
+                myMessage2.clear(); 
+                java.awt.Toolkit.getDefaultToolkit().beep();
+            }
             
             if (state == 2) {
                 // No flash
@@ -308,7 +305,7 @@ public class Experiment3 extends PApplet {
                 shape(center);
                 shape(target);
                 
-            } else { // State 4 --> only SSVEP
+            } else if (state == 4) { // State 4 --> only SSVEP
                 if (loopCount % 2 == 0) {
                     ssvepRect.setFill(ssvepfill);
                 } else {
