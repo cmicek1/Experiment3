@@ -3,7 +3,8 @@ package braintobrain.experiment3;
 import processing.core.PApplet;
 import processing.core.PShape;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
+import java.util.TreeSet;
 
 import oscP5.OscP5;
 import oscP5.OscMessage;
@@ -21,7 +22,7 @@ import netP5.NetAddress;
  * 10/20 guidelines):
  *  - BIAS/SRB on A1/A2
  *  - N1P on Oz
- *  - N2P on Fp1
+ *  - N2P on Fp2
  *  
  * The experiment displays a Processing window, then performs 20
  * randomized trials, 10 each for both the control and experimental
@@ -71,10 +72,13 @@ public class Experiment3 extends PApplet {
     public static final int IDLETIME = 15000;
     
     /** Time for each gaze. */
-    public static final int GAZETIME = 5000;
+    public static final int GAZETIME = 20000;
     
     /** Frequency of SSVEP stimulus (in Hz). */
     public static final double FREQ = 8.0;
+    
+    /** Time to delay draw function. */
+    public static final int DELAYTIME = (int) ((1.0 / FREQ) * 500);
     
     
     /** Color to fill a rectangle for SSVEP. */
@@ -89,11 +93,17 @@ public class Experiment3 extends PApplet {
     int startTime = millis();
     
     /** Counters for number of times each condition has occurred. */
-    int[] counters = new int[2];
+    int[] counters = new int[3];
     
     /** Counter for number of draw loop iterations.
      *  Used for flash/sound signals. */
     int loopCount = 0;
+    
+    /** Set of states excluded in choosing next state. */
+    TreeSet<Integer> exStates = new TreeSet<Integer>();
+    
+    /** Random instance for state generator. */
+    Random seed = new Random();
     
     /**
      * State of the program, sent to EEG output file.
@@ -149,7 +159,7 @@ public class Experiment3 extends PApplet {
      */
     public void changeState(int newstate) {
         state = newstate; //update state
-        if (state == 2 || state == 3) {
+        if (state == 2 || state == 3 || state == 4) {
             // First digit is state, last 2 are trial #
             myMessage2.add(state * 100 + counters[state - 2]);
         } else {
@@ -163,29 +173,52 @@ public class Experiment3 extends PApplet {
     }
     
     /**
+     * Generate a random integer in [start, end], excluding elements in
+     * "exclude".
+     * 
+     * @param rnd       Random instance
+     * @param start     the starting int for the range of numbers
+     * @param end       the ending int for the range of numbers
+     * @param exclude   the set of integers to exclude
+     * @return          a random int in the specified range
+     */
+    public int getRandom(Random rnd, int start, int end, TreeSet<Integer> exclude) {
+        int random = start
+                + rnd.nextInt(end - start + 1 - exclude.size());
+        for (int ex : exclude) {
+            if (random < ex) {
+                break;
+            }
+            random++;
+        }
+        return random;
+    }
+    
+    /**
      * After the idle state, randomly chooses a new state for
      * experiment conditions, or the exit state if all trials
      * have been exhausted.
      * @return the new current state
      */
     public int chooseState() {
-        if (counters[0] == 10 && counters[1] == 10) {
+        if (counters[0] == 10 && counters[1] == 10 && counters[2] == 10) {
             // All trials finished; exit
-            return 4;
-        } else if (counters[0] == 10 && counters[1] != 10) {
-            // Need more state 3
-            counters[1]++;
-            return 3;
-        } else if (counters[0] != 10 && counters[1] == 10) {
-            // Need more state 2
-            counters[0]++;
-            return 2;
-        } else {
-            // Randomly choose either state 2 or state 3
-            int currState = ThreadLocalRandom.current().nextInt(2, 3 + 1);
-            counters[currState - 2] = counters[currState - 2] + 1;
-            return currState;
+            return 5;
+        } else if (counters[0] == 10) {
+            // No more state 2
+            exStates.add(2);
+        } else if (counters[1] == 10) {
+            // No more state 3
+            exStates.add(3);
+        } else if (counters[2] == 10) {
+            // No more state 4
+            exStates.add(4);
         }
+        // Randomly choose either state 2 or state 3
+        int currState = getRandom(seed, 2, 4, exStates);
+        counters[currState - 2] = counters[currState - 2] + 1;
+        return currState;
+
     }
 
 
@@ -213,7 +246,7 @@ public class Experiment3 extends PApplet {
                 ssvepRect.getWidth() * RECTPERCENT);
         target.setFill(targetfill);
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             counters[i] = 0;
         }
         java.awt.Toolkit.getDefaultToolkit().beep();
@@ -233,9 +266,10 @@ public class Experiment3 extends PApplet {
             changeState(chooseState());
         }
               
-        if (state == 2 || state == 3) {
+        if (state == 2 || state == 3 || state == 4) {
             // Update state first
-            if (loopCount != 0 && loopCount % 100 == 0) {
+            if (loopCount != 0 && loopCount
+                    % (int) ((double) GAZETIME / DELAYTIME)  == 0) {
                 changeState(chooseState());
             }
             
@@ -263,7 +297,8 @@ public class Experiment3 extends PApplet {
                 shape(ssvepRect);
                 shape(center);
                 shape(target);
-            } else { // State 3 --> SSVEP
+                
+            } else if (state == 3) { // State 3 --> SSVEP with saccades
                 if (loopCount % 2 == 0) {
                     ssvepRect.setFill(ssvepfill);
                 } else {
@@ -272,6 +307,15 @@ public class Experiment3 extends PApplet {
                 shape(ssvepRect);
                 shape(center);
                 shape(target);
+                
+            } else { // State 4 --> only SSVEP
+                if (loopCount % 2 == 0) {
+                    ssvepRect.setFill(ssvepfill);
+                } else {
+                    ssvepRect.setFill(color(0));
+                }
+                shape(ssvepRect);
+                shape(center);
             }
             
            
@@ -279,12 +323,12 @@ public class Experiment3 extends PApplet {
         }
         
         
-        if (state == 4) {
+        if (state == 5) {
             exit();
         }
         
         // 4 Hz per rectangle color change
-        delay((int) (1.0 / FREQ) * 500);
+        delay(DELAYTIME);
     }
 
     /**
