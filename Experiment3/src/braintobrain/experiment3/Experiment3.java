@@ -24,20 +24,26 @@ import ddf.minim.AudioPlayer;
  *  - N1P on Oz
  *  - N2P on Fp2
  *  
- * The experiment displays a Processing window, then performs 20
- * randomized trials, 10 each for both the control and experimental
+ * The experiment displays a Processing window, then performs 15
+ * randomized trials, 5 each for the control, experimental, and SSVEP
  * conditions, as follows:
  *   - Control:
- *      o  No presented visual stimulus
+ *      o  White rectangle with red circle fixation point at center, and
+ *         red rectangle saccade target at the rectangle's right edge
  *   - Experimental:
- *      o  Large rectangle flashing black and white at 8 Hz
+ *      o  Large rectangle flashing black and white at 8 Hz,
+ *         with red circle fixation point at center, and red rectangle
+ *         saccade target at the rectangle's right edge
+ *   - SSVEP:
+ *      o  Large rectangle flashing black and white at 8 Hz,
+ *         with red circle fixation point at center
+ *   
  *      
- * For both cases, the trial is initiated with an audio cue of one system
- * default beep.
+ * For all cases, the trial is initiated with an audio cue of one high-
+ * pitched beep.
  * 
-// * Cues of one system-default beep then signal when the subject should change
-// * his/her gazing direction, following the sequence below:
-// *    left --> right --> up --> down
+ * Cues of one system-default beep then signal when the subject should 
+ * make saccades to the target
  * 
  * 
  * @author Chris Micek
@@ -112,12 +118,13 @@ public class Experiment3 extends PApplet {
      * 1 = idle
      * 2 = control
      * 3 = experimental
-     * 4 = post-experiment
+     * 4 = SSVEP only
+     * 5 = post-experiment
      */
     int state = 0;
     
     /** Stored number of eye saccades. */
-    int gazeNum = 0;
+    int gazeNum = 1;
     
     
     //For communication with OpenBCI_GUI
@@ -278,16 +285,17 @@ public class Experiment3 extends PApplet {
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
+                gazeNum++;
                 
             } else if (loopCount % 46 == 0 && state < 4) {
-                ++gazeNum;
-                if (gazeNum == 8) {
-                    gazeNum = 0;
-                }
                 myMessage2.add(state * 100 + 10 * counters[state - 2] + gazeNum);
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
+                gazeNum++;
+                if (gazeNum == 8) {
+                    gazeNum = 1;
+                }
             }
             
             if (state == 2) {

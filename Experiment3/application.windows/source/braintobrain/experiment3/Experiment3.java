@@ -117,7 +117,7 @@ public class Experiment3 extends PApplet {
     int state = 0;
     
     /** Stored number of eye saccades. */
-    int gazeNum = 0;
+    int gazeNum = 1;
     
     
     //For communication with OpenBCI_GUI
@@ -278,16 +278,17 @@ public class Experiment3 extends PApplet {
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
+                gazeNum++;
                 
             } else if (loopCount % 46 == 0 && state < 4) {
-                ++gazeNum;
-                if (gazeNum == 8) {
-                    gazeNum = 0;
-                }
                 myMessage2.add(state * 100 + 10 * counters[state - 2] + gazeNum);
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
+                gazeNum++;
+                if (gazeNum == 8) {
+                    gazeNum = 1;
+                }
             }
             
             if (state == 2) {
