@@ -69,7 +69,7 @@ public class Experiment3 extends PApplet {
     public static final float RECTPERCENT = 1f / 10;
     
     /** Time to delay from idle state to experiment start (in milliseconds). */
-    public static final int IDLETIME = 1000;
+    public static final int IDLETIME = 15000;
     
     /** Time for each gaze. */
     public static final int GAZETIME = 20000;
