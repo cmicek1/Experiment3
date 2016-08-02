@@ -69,7 +69,7 @@ public class Experiment3 extends PApplet {
     public static final float RECTPERCENT = 1f / 10;
     
     /** Time to delay from idle state to experiment start (in milliseconds). */
-    public static final int IDLETIME = 15000;
+    public static final int IDLETIME = 1000;
     
     /** Time for each gaze. */
     public static final int GAZETIME = 20000;
@@ -226,19 +226,21 @@ public class Experiment3 extends PApplet {
         size(1920, 1080, P2D); // Basically fullscreen
         background(0); // Start black
         shapeMode(CENTER);
-        ssvepRect = createShape(RECT, width / 6, height / 2,
+        int rectCenterX = width / 2;
+        int rectCenterY = height / 2;
+        ssvepRect = createShape(RECT, rectCenterX, rectCenterY,
                 width * SCREENPERCENT,
                 width * SCREENPERCENT);
         ssvepRect.setFill(ssvepfill);
         
-        center = createShape(ELLIPSE, width / 6, height / 2,
+        center = createShape(ELLIPSE, rectCenterX, rectCenterY,
                 ssvepRect.getWidth() * RECTPERCENT / 3,
                 ssvepRect.getWidth() * RECTPERCENT / 3);
         center.setFill(targetfill);
         
         target = createShape(RECT,
-                width * ((1 + 3 * SCREENPERCENT) / 6f)
-                - (ssvepRect.getWidth() * RECTPERCENT / 2f), height / 2,
+                rectCenterX + ssvepRect.getWidth() / 2f
+                - (ssvepRect.getWidth() * RECTPERCENT / 2f), rectCenterY,
                 ssvepRect.getWidth() * RECTPERCENT,
                 ssvepRect.getWidth() * RECTPERCENT);
         target.setFill(targetfill);
