@@ -287,20 +287,20 @@ public class Experiment3 extends PApplet {
                 java.awt.Toolkit.getDefaultToolkit().beep();
                 gazeNum++;
                 
-            } else if (loopCount % 46 == 0 && state < 4) {
+            } else if (loopCount % 161 == 0 && state < 4) {
                 myMessage2.add(state * 100 + 10 * counters[state - 2] + gazeNum);
                 oscP5Location2.send(myMessage2, location1);
                 myMessage2.clear(); 
                 java.awt.Toolkit.getDefaultToolkit().beep();
                 gazeNum++;
-                if (gazeNum == 8) {
+                if (gazeNum == 3) {
                     gazeNum = 1;
                 }
             }
             
             if (state == 2) {
                 // No flash
-                ssvepRect.setFill(ssvepfill);
+                ssvepRect.setFill(color(0));
                 shape(ssvepRect);
                 shape(center);
                 shape(target);
