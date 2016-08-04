@@ -63,8 +63,9 @@ public class Experiment3 extends PApplet {
     
     
     /** File path to state-change beep file. */
-    public static final String BEEP =
-            "C:/Users/Chris/git/Experiment3/Experiment3/src/data/beep-08b.wav";
+    public static final String BEEP = 
+            "beep-08b.wav";
+            //"C:/Users/Chris/git/Experiment3/Experiment3/src/data/beep-08b.wav";
     
     /** Percentage of the screen for SSVEP rectangle to fill. */
     public static final float SCREENPERCENT = 1f / 5;
@@ -230,6 +231,7 @@ public class Experiment3 extends PApplet {
     public void setup() {
         minim = new Minim(this);
         player = minim.loadFile(BEEP);
+//        size(3840, 2160, P2D);
         size(displayWidth, displayHeight, P2D); // Basically fullscreen
         background(0); // Start black
         shapeMode(CENTER);
